@@ -1,3 +1,5 @@
+// "use-client";
+
 import AuthForm from "@/components/AuthFrom";
 
 export default function SignUpPage() {
