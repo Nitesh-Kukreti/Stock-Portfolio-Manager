@@ -27,15 +27,31 @@ export default function AuthForm({ type }: AuthFormProps) {
     try {
       setLoading(true);
       let response;
+
       if (isSignIn) {
         response = await axios.post("/api/users/signin", user);
+
+        console.log(
+          "%c Login Success ",
+          "color: #00E676; font-weight: 900 ",
+          response.data,
+        );
+        router.push("/dashboard");
       } else {
         response = await axios.post("/api/users/signup", user);
-        console.log("signup success", response.data);
+        console.log(
+          "%c Signup Success ",
+          "color: #00E676; font-weight: 900 ",
+          response.data,
+        );
         router.push("/signin");
       }
     } catch (error: any) {
-      console.log(error.response);
+      console.log(
+        "%c Login failed ",
+        "color: red; font-weight: 900 ",
+        error.response,
+      );
     } finally {
       setLoading(false);
     }
