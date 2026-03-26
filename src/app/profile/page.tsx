@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +26,18 @@ const USER_DATA = {
 export default function ProfilePage() {
   const router = useRouter();
 
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+      async function getUser() {
+        const response = await axios.get("api/users/getUser");
+        setUser(response.data.data);
+        console.log(user)
+      }
+      getUser();
+    }, []);
+
+  
   const logout = async () => {
     try {
       const response = await axios.get("/api/users/signout");
@@ -70,27 +82,27 @@ export default function ProfilePage() {
 
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-xl font-bold text-white mb-1">
-                {USER_DATA.fullName}
+                {user?.fullName || "username"}
               </h2>
               <div className="flex items-center justify-center md:justify-start gap-2 text-sm">
                 <Mail size={14} />
-                <span>{USER_DATA.email}</span>
+                <span>{user?.email || "email"}</span>
               </div>
             </div>
 
             <div
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                USER_DATA.isVerified
+                user?.isVerified 
                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                   : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
               }`}
             >
-              {USER_DATA.isVerified ? (
+              {user?.isVerified ? (
                 <ShieldCheck size={14} />
               ) : (
                 <ShieldAlert size={14} />
               )}
-              {USER_DATA.isVerified ? "Verified" : "Not Verified"}
+              {user?.isVerified ? "Verified" : "Not Verified"}
             </div>
           </div>
         </section>
@@ -118,7 +130,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Conditional Verification Nudge */}
-        {!USER_DATA.isVerified && (
+        {!user?.isVerified && (
           <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-2xl flex items-start gap-4">
             <ShieldAlert className="text-amber-500 mt-1" size={20} />
             <div>
