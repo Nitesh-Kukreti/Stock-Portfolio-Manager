@@ -141,7 +141,17 @@ export default function AuthForm({ type }: AuthFormProps) {
         </button>
       </form>
 
+
       <div className="text-center text-sm text-slate-600">
+        {isSignIn && (
+          <Link
+            href="/forgot-password"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        )}
+
         {isSignIn ? (
           <p>
             Don't have an account?{" "}

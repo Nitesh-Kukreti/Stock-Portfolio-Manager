@@ -15,6 +15,9 @@ import {
   Camera,
   Link,
 } from "lucide-react";
+import { sendOtp } from "@/helpers/sendOtp";
+import { logError, logSuccess } from "@/utils/logger";
+import { emitWarning } from "process";
 
 // Mock Data - Connect this to your backend/session
 const USER_DATA = {
@@ -26,34 +29,93 @@ const USER_DATA = {
 export default function ProfilePage() {
   const router = useRouter();
 
-    const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const [otp, setOtp] = useState({
+    isSent: false,
+    value: "",
+  });
 
-    useEffect(() => {
-      async function getUser() {
-        const response = await axios.get("api/users/getUser");
-        setUser(response.data.data);
-        console.log(user)
-      }
-      getUser();
-    }, []);
+  useEffect(() => {
+    async function getUser() {
+      const response = await axios.get("api/users/get-user");
+      setUser(response.data.data);
+      console.log(user);
+    }
+    getUser();
+  }, []);
 
-  
   const logout = async () => {
     try {
       const response = await axios.get("/api/users/signout");
       console.log(
-          "%c Logout Success ",
-          "color: #00E676; font-weight: 900 ",
-          response.data,
-        );
-        router.push("/signin");
-        return response;
+        "%c Logout Success ",
+        "color: #00E676; font-weight: 900 ",
+        response.data,
+      );
+      router.push("/signin");
+      return response;
     } catch (error: any) {
       console.log(
         "%c Signup failed ",
         "color: #red; font-weight: 900 ",
         error.response,
       );
+    }
+  };
+
+  const deleteUser = async () => {
+    try {
+      const response = await axios.delete("api/users/delete-user");
+      console.log(
+        "%c User deleted successfully ",
+        "color: #00E676; font-weight: 900 ",
+        response,
+      );
+      router.push("/signup");
+    } catch (error: any) {
+      console.log(
+        "%c Error deleting user ",
+        "color: red; font-weight: 900 ",
+        error.response,
+      );
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      const body = {
+        email: user.email,
+        otp: otp.value,
+        type: "VERIFY_EMAIL",
+      };
+      console.log(body);
+      const response = await axios.post("/api/users/verify-otp", body);
+
+      logSuccess("email verification successful", response.data);
+      console.log("Verifying code...");
+    } catch (error: any) {
+      logError("email verification failed", error.response.data);
+    }
+  };
+  const handleSendCode = async () => {
+    try {
+      setOtp((prev) => ({
+        ...prev,
+        isSent: true,
+      }));
+
+      await sendOtp(user?.email, "VERIFY_EMAIL");
+      console.log(
+        "%c Code sent successfully ",
+        "color: #00E676; font-weight: 900 ",
+      );
+    } catch (error: any) {
+      console.log(
+        "%c Error while sending code ",
+        "color: red; font-weight: 900 ",
+        error.response,
+      );
+      console.log("Error while sending code");
     }
   };
 
@@ -92,7 +154,7 @@ export default function ProfilePage() {
 
             <div
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                user?.isVerified 
+                user?.isVerified
                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                   : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
               }`}
@@ -127,6 +189,14 @@ export default function ProfilePage() {
             variant="danger"
             onClick={logout}
           />
+
+          <ProfileAction
+            icon={<LogOut size={20} className="text-rose-400" />}
+            title="Delete Account"
+            description="Securely delete your account"
+            variant="danger"
+            onClick={deleteUser}
+          />
         </div>
 
         {/* Conditional Verification Nudge */}
@@ -141,10 +211,44 @@ export default function ProfilePage() {
                 Your email is not verified. Click send code to get OTP on you
                 registered email.
               </p>
-              <button className="mt-2 text-xs font-bold text-white hover:underline">
+              <button
+                className="mt-2 text-xs font-bold text-white hover:underline"
+                onClick={handleSendCode}
+              >
                 Send Code
               </button>
             </div>
+            <div></div>
+          </div>
+        )}
+        {otp.isSent && (
+          <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-2xl flex items-start gap-4">
+            <ShieldAlert className="text-amber-500 mt-1" size={20} />
+            <div>
+              <p className="text-sm font-bold text-amber-500">
+                Enter 6 digin otp sent to your email to verify your account
+              </p>
+              <p className="text-xs text-zinc-500 mt-0.5 bg-white size-fit">
+                <input
+                  type="text"
+                  value={otp.value}
+                  onChange={(e: any) =>
+                    setOtp((prev) => ({
+                      ...prev,
+                      value: e.target.value,
+                    }))
+                  }
+                  className="text-black font-bold"
+                />
+              </p>
+              <button
+                className="mt-2 text-xs font-bold text-white hover:underline"
+                onClick={handleVerifyCode}
+              >
+                Verify Code
+              </button>
+            </div>
+            <div></div>
           </div>
         )}
       </div>

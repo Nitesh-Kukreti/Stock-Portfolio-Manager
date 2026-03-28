@@ -19,22 +19,22 @@ model User { // it is a table
 }
 
 model Verification {
-  id String @id @default(uuid())
-  hashedCode String 
-  type VerificationType @default(EMAIL_VERIFY)
-  attempts Int @default(0)
-  expiresAt DateTime 
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  hashedCode  String
+  type        VerificationType @default(VERIFY_EMAIL)
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
 
-  // Foreign Key to User
-  userId String 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Foreign Key to User via email
+  email       String
+  user        User     @relation(fields: [email], references: [email], onDelete: Cascade)
 
-  @@index([userId]) // For faster lookups
+  @@index([email])
 }
 
 enum VerificationType {
-  EMAIL_VERIFY
-  PASSWORD_RESET
-  EMAIL_CHANGE
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  CHANGE_EMAIL
 }
