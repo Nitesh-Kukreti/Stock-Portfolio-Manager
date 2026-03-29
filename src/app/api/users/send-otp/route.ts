@@ -1,33 +1,24 @@
-import { NextResponse } from "next/server";
 import { sendOtp } from "@/helpers/sendOtp";
-import { errorResponse, successResponse } from "@/utils/apiResponse";
+import { errorResponse, successResponse, HTTP_STATUS } from "@/utils/apiResponse";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, type } = body;
 
-    // 🔹 Basic validation
     if (!email || !type) {
-        return errorResponse("Email and type are required", null, 400);
+      return errorResponse("Email and type are required", null, HTTP_STATUS.BAD_REQUEST);
     }
 
-    // 🔹 Call helper
     const result = await sendOtp(email, type);
 
     if (!result.success) {
-      return NextResponse.json(
-        { message: result.message || "Failed to send OTP" },
-        { status: 400 },
-      );
+      return errorResponse(result.message || "Failed to send OTP", null, HTTP_STATUS.BAD_REQUEST);
     }
 
-    return successResponse("OTP sent successfully", null, 200);
-  
+    return successResponse("OTP sent successfully", null, HTTP_STATUS.OK);
   } catch (error) {
-    console.error("Send OTP Route Error:", error);
-
-    return errorResponse("Internal Server Error", error, 500);
-    
+    console.error("Send OTP error:", error);
+    return errorResponse("Internal server error", error, HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 }

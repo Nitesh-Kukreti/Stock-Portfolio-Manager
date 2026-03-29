@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { logSuccess, logError } from "@/utils/logger";
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -28,18 +29,10 @@ export default function ChangePassword() {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      console.log(
-        "%c Password changed successfully ",
-        "color: #00E676; font-weight: 900 ",
-        response.data,
-      );
+      logSuccess("Password changed successfully", response.data);
       router.push("/profile");
     } catch (error: any) {
-      console.log(
-        "%c Failed to change password ",
-        "color: red; font-weight: 900 ",
-        error.response,
-      );
+      logError("Failed to change password", error.response?.data);
     }
   };
 

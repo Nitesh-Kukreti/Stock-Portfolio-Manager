@@ -4,7 +4,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { logError, logSuccess } from "@/utils/logger";
+import { logError, logSuccess, logSimple } from "@/utils/logger";
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function ChangePassword() {
     }
 
     try {
-      console.log("Token from URL:", token);
+      logSimple("Token from URL:", token);
 
       if (!token) {
         alert("Invalid session. Please start the OTP process again.");

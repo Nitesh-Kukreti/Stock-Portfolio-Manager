@@ -1,30 +1,29 @@
 import { getDataFromToken } from "@/helpers/getDataFromToken";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { successResponse, errorResponse, HTTP_STATUS } from "@/utils/apiResponse";
 
 export async function GET(request: NextRequest) {
   try {
-    // get user id from saved token
     const userId = await getDataFromToken(request);
 
-    // get user from database using userid
     const userDetails = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
         fullName: true,
-        isVerified: true
+        isVerified: true,
       },
     });
 
-    return NextResponse.json({
-      message: "User found",
-      data: userDetails,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+    if (!userDetails) {
+      return errorResponse("User not found", null, HTTP_STATUS.NOT_FOUND);
+    }
+
+    return successResponse("User found", userDetails, HTTP_STATUS.OK);
+  } catch (error) {
+    console.error("Get user error:", error);
+    return errorResponse("Internal server error", error, HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 }

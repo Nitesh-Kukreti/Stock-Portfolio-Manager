@@ -39,7 +39,6 @@ export default function ProfilePage() {
     async function getUser() {
       const response = await axios.get("api/users/get-user");
       setUser(response.data.data);
-      console.log(user);
     }
     getUser();
   }, []);
@@ -88,16 +87,15 @@ export default function ProfilePage() {
         otp: otp.value,
         type: "VERIFY_EMAIL",
       };
-      console.log(body);
       const response = await axios.post("/api/users/verify-otp", body);
-
       logSuccess("email verification successful", response.data);
-      console.log("Verifying code...");
+      window.location.reload();
     } catch (error: any) {
       logError("email verification failed", error.response.data);
     }
   };
   const handleSendCode = async () => {
+    router.refresh();
     try {
       setOtp((prev) => ({
         ...prev,

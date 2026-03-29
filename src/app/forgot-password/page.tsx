@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { logSuccess, logError, logSimple } from "@/utils/logger";
+import { logSuccess, logError } from "@/utils/logger";
 
-import { sendOtp } from "@/helpers/sendOtp";
 import { useRouter } from "next/navigation";
 
 export default function ForgotPassword() {

@@ -1,62 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { successResponse, errorResponse, HTTP_STATUS } from "@/utils/apiResponse";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password, fullName } = body;
 
-    // 1. Basic Validation
     if (!email || !password || !fullName) {
-      return NextResponse.json(
-        { message: "Missing required fields" },
-        { status: 400 },
-      );
+      return errorResponse("Missing required fields", null, HTTP_STATUS.BAD_REQUEST);
     }
 
-    // 2. Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email },
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { message: "User with this email already exists" },
-        { status: 409 },
-      );
+      return errorResponse("User with this email already exists", null, HTTP_STATUS.CONFLICT);
     }
 
-    // 3. Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Create the user in PostgreSQL
     const newUser = await prisma.user.create({
-      data: {
-        email: email,
-        fullName: fullName,
-        passwordHash: hashedPassword,
-      },
+      data: { email, fullName, passwordHash: hashedPassword },
     });
 
-    // 5. Success Response (Exclude password from the response)
-    return NextResponse.json(
-      {
-        message: "User created successfully",
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          fullName: newUser.fullName,
-        },
-      },
-      { status: 201 },
-    );
-  } catch (error: any) {
-    console.error("Signup Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error", error: error.message },
-      { status: 500 },
-    );
+    return successResponse("User created successfully", {
+      id: newUser.id,
+      email: newUser.email,
+      fullName: newUser.fullName,
+    }, HTTP_STATUS.CREATED);
+  } catch (error) {
+    console.error("Signup error:", error);
+    return errorResponse("Internal server error", error, HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 }

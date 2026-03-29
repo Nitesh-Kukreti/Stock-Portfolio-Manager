@@ -11,8 +11,8 @@ export const sendOtp = async (email: string, type: OtpPurpose) => {
     });
 
     if (!user) {
-      console.log("⚠️  INVALID EMAIL  ⚠️ ");
-      return { mesaage: "INVALID EMAIL", success: false };
+      console.warn("Send OTP: invalid email attempted -", email);
+      return { message: "Invalid email", success: false };
     }
 
     // 1. Generate 6-digit OTP
@@ -41,7 +41,7 @@ export const sendOtp = async (email: string, type: OtpPurpose) => {
 
     return { message: "otp sent successfully", success: true };
   } catch (error: any) {
-    console.log({ message: "Error sending otp", Error: error });
-    return { message: "Error sending otp", error };
+    console.error("Send OTP error:", error);
+    return { message: "Error sending otp", success: false };
   }
 };

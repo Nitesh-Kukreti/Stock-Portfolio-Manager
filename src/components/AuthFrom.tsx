@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { NextResponse } from "next/server";
+import { logSuccess, logError } from "@/utils/logger";
 interface AuthFormProps {
   type: "signin" | "signup";
 }
@@ -30,28 +30,15 @@ export default function AuthForm({ type }: AuthFormProps) {
 
       if (isSignIn) {
         response = await axios.post("/api/users/signin", user);
-
-        console.log(
-          "%c Login Success ",
-          "color: #00E676; font-weight: 900 ",
-          response.data,
-        );
+        logSuccess("Login successful", response.data);
         router.push("/dashboard");
       } else {
         response = await axios.post("/api/users/signup", user);
-        console.log(
-          "%c Signup Success ",
-          "color: #00E676; font-weight: 900 ",
-          response.data,
-        );
+        logSuccess("Signup successful", response.data);
         router.push("/signin");
       }
     } catch (error: any) {
-      console.log(
-        "%c Login failed ",
-        "color: red; font-weight: 900 ",
-        error.response,
-      );
+      logError("Auth failed", error.response?.data);
     } finally {
       setLoading(false);
     }
